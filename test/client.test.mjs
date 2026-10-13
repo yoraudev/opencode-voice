@@ -70,7 +70,7 @@ test("the settings menu lists every setting and changes the one that is picked",
   const { client, config } = await boot()
   const ui = scripted(["silenceMs", "3000", "language", "tr", undefined])
   await openSettings({ ...ui, call: client.call, ready: client.ready, watch: async () => {} })
-  assert.deepEqual(ui.shown[0].options.map((option) => option.value), ["status", "model", "language", "device", "silenceMs", "threads", "speak", "voiceTr", "voiceEn"])
+  assert.deepEqual(ui.shown[0].options.map((option) => option.value), ["status", "key", "model", "language", "device", "silenceMs", "threads", "speak", "voiceTr", "voiceEn"])
   assert.equal(config.silenceMs, 3000)
   assert.equal(config.language, "tr")
   assert.deepEqual(ui.toasts.map((toast) => toast.message), ["Silence before sending (ms) set to 3000.", "Language set to Turkish."])
@@ -104,4 +104,18 @@ test("a refused value is shown as an error and the menu stays open", async () =>
 test("the status line names the state of the model", () => {
   assert.equal(statusLine({ state: "downloading", model: "small", percent: 40 }), "Downloading small: 40%")
   assert.equal(statusLine(undefined), "The daemon is not running")
+})
+
+test("the shortcut is changed in the menu and handed to the window at once", async () => {
+  const { client, config } = await boot()
+  const ui = scripted(["key", " Ctrl+Shift+R ", "key", "r", "key", "escape", undefined])
+  const applied = []
+  await openSettings({ ...ui, call: client.call, ready: client.ready, watch: async () => {}, onChange: (result) => applied.push(result.key) })
+  assert.equal(config.key, "ctrl+shift+r")
+  assert.deepEqual(applied, ["ctrl+shift+r"])
+  assert.deepEqual(ui.toasts.map((toast) => toast.variant), ["success", "error", "error"])
+  assert.equal(ui.toasts[0].message, "Shortcut set to ctrl+shift+r.")
+  assert.match(ui.toasts[1].message, /would fire while you type/)
+  assert.match(ui.toasts[2].message, /escape cancels a recording/)
+  assert.equal(ui.shown[1].value, "alt+r")
 })

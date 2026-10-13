@@ -31,6 +31,7 @@ export const DEFAULTS = {
   silenceMs: 2000,
   device: "default",
   threads: 4,
+  key: "alt+r",
   speak: true,
   voiceTr: "tr_TR-dfki-medium",
   voiceEn: "en_US-lessac-medium",
@@ -39,6 +40,19 @@ export const DEFAULTS = {
 const LIMITS = {
   silenceMs: [600, 15000],
   threads: [1, 64],
+}
+
+const MODIFIERS = ["ctrl", "alt", "shift", "meta"]
+
+function shortcut(value) {
+  const text = String(value).trim().toLowerCase()
+  const parts = text.split("+").map((part) => part.trim())
+  const last = parts.pop()
+  if (parts.some((part) => !MODIFIERS.includes(part)) || new Set(parts).size !== parts.length) throw new Error(`"${text}" is not a shortcut: the keys before the last one must be ${MODIFIERS.join(", ")}`)
+  if (!/^[a-z0-9]+$/.test(last)) throw new Error(`"${text}" is not a shortcut: the last key must be a letter, a digit or a key name such as f8`)
+  if (last === "escape" || last === "esc") throw new Error("escape cancels a recording and cannot also start one")
+  if (parts.length === 0 && (last.length === 1 || ["space", "enter", "return", "tab", "backspace"].includes(last))) throw new Error(`"${text}" needs ctrl, alt, shift or meta, or it would fire while you type`)
+  return [...parts, last].join("+")
 }
 
 export function validate(key, value) {
@@ -53,6 +67,7 @@ export function validate(key, value) {
     if (!voices.includes(value)) throw new Error(`${key} must be one of ${voices.join(", ")}`)
     return value
   }
+  if (key === "key") return shortcut(value)
   if (key === "speak") {
     if (typeof value !== "boolean") throw new Error("speak must be true or false")
     return value

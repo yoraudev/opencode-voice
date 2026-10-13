@@ -1,5 +1,6 @@
 import { Plugin } from "@opencode/plugin/tui"
 import { Show, createSignal } from "solid-js"
+import { load } from "../daemon/config.mjs"
 import { createClient } from "./client.js"
 import { isBusy, openSettings, statusLine } from "./settings.js"
 
@@ -13,7 +14,7 @@ export default Plugin.define({
   setup(ctx) {
     const { call, ready, events } = createClient(ctx.options)
     const owner = `${process.pid}-${Math.random().toString(36).slice(2)}`
-    const toggleKey = ctx.options.key ?? "alt+r"
+    const [toggleKey, setToggleKey] = createSignal(load().key)
 
     const [phase, setPhase] = createSignal("idle")
     const [status, setStatus] = createSignal()
@@ -124,7 +125,10 @@ export default Plugin.define({
         )
       })
 
-    const shortcut = () => ctx.keymap.shortcuts("voice.toggle")[0] ?? toggleKey
+    const shortcut = () => {
+      const key = toggleKey()
+      return ctx.keymap.shortcuts("voice.toggle")[0] ?? key
+    }
     const hint = () => {
       if (phase() === "recording") return `● Listening. ${shortcut()} sends, esc cancels`
       return isBusy(status()) ? statusLine(status()) : "Starting the microphone…"
@@ -169,7 +173,7 @@ export default Plugin.define({
           title: "Voice: record a prompt",
           description: "Start recording; run again to stop and send what was said",
           group: "Voice",
-          bind: toggleKey,
+          bind: toggleKey(),
           palette: true,
           slash: { name: "voice" },
           run: toggle,
@@ -200,7 +204,7 @@ export default Plugin.define({
           bind: false,
           palette: true,
           slash: { name: "voice-settings" },
-          run: () => void openSettings({ dialog: ctx.ui.dialog, toast: ctx.ui.toast, call, ready, watch }),
+          run: () => void openSettings({ dialog: ctx.ui.dialog, toast: ctx.ui.toast, call, ready, watch, onChange: (config) => setToggleKey(config.key) }),
         },
       ],
     }))

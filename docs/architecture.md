@@ -124,7 +124,9 @@ A window moves from `idle` to `starting` to `recording` and back. On a toggle it
 
 On `final` with text the window sends the prompt with `client.session.prompt` and the metadata `{ voice: true }`. On the home screen it first creates a session with the model selected there and navigates to it. If sending fails, the text is shown in a toast so that it is not lost. The plugin API has no way to put text into the prompt box, which is why the live text is shown above it and cannot be edited.
 
-The commands are registered in the `global` keymap mode: `voice.toggle` (`alt+r`, `/voice`), `voice.cancel` (`escape`, only while a recording runs), `voice.quiet` (`/voice-quiet`) and `voice.settings` (`/voice-settings`).
+The commands are registered in the `global` keymap mode: `voice.toggle` (the `key` setting, `alt+r` by default, and `/voice`), `voice.cancel` (`escape`, only while a recording runs), `voice.quiet` (`/voice-quiet`) and `voice.settings` (`/voice-settings`).
+
+The shortcut is a setting like the others, stored by the daemon, although only the window uses it. The window reads it from the settings file when the plugin loads and holds it in a Solid signal that the keymap layer reads, so a change made in the settings menu rebinds the command at once. Other open windows keep the old shortcut until they restart. `daemon/config.mjs` refuses a shortcut that is a single letter, digit or editing key without a modifier, because it would fire while typing in the prompt, and `escape`, which cancels a recording.
 
 `plugin/settings.js` is the settings menu. It is plain logic over the host's dialogs and has no OpenCode imports. It shows every setting with its current value, asks for the new value with a second select dialog or a text prompt, posts it to `/config` and reports the result in a toast, then shows the list again until it is closed. While a model or a voice is downloaded or loaded it shows the `watch` dialog from `tui.jsx`, which polls `/config` twice a second and updates one line in place.
 

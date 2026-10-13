@@ -59,8 +59,8 @@ The first recording downloads the `small` recognition model (358 MB), and the fi
 
 | Action | How |
 | --- | --- |
-| Start recording | `alt+r`, click `🎙 voice` in the prompt footer, or `/voice` |
-| Send | Stop speaking for two seconds, or press `alt+r` or click `● REC` |
+| Start recording | `alt+r` (changeable in the settings), click `🎙 voice` in the prompt footer, or `/voice` |
+| Send | Stop speaking for two seconds, or press the shortcut again or click `● REC` |
 | Cancel without sending | `esc` |
 | Stop the spoken reply | Start a recording, or `/voice-quiet` |
 | Settings | `/voice-settings`, or "Voice settings" in the command palette |
@@ -83,6 +83,7 @@ When a prompt was spoken, the model gets a `speak` tool for that turn and is ask
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
+| Shortcut | `alt+r` | The keys that start and end a recording, joined by `+`, such as `ctrl+shift+r` or `f8`. A single letter or digit needs `ctrl`, `alt`, `shift` or `meta`, and `escape` is taken by cancel. The change applies at once in the window where it is made, and in other open windows after a restart. |
 | Model | `small` | `tiny`, `base`, `small`, `medium`, `large-v3` or `turbo`. Larger models make fewer mistakes and take longer. A model is downloaded the first time it is selected. |
 | Language | Detect automatically | One of Whisper's 99 languages. Speech is written in the language it is spoken in, never translated. |
 | Microphone | System default | The input device. |
@@ -105,13 +106,12 @@ The plugin itself takes options in `opencode.jsonc`:
 
 ```jsonc
 {
-  "plugins": [{ "package": "/full/path/to/opencode-voice/plugin", "options": { "key": "ctrl+shift+r" } }]
+  "plugins": [{ "package": "/full/path/to/opencode-voice/plugin", "options": { "port": 7719 } }]
 }
 ```
 
 | Option | Default | Meaning |
 | --- | --- | --- |
-| `key` | `alt+r` | The shortcut that starts and ends a recording. |
 | `port` | `7718` | The daemon's port. The environment variable `OPENCODE_VOICE_PORT` sets it too. |
 | `node` | `node` | The Node.js executable that runs the daemon. |
 | `debug` | off | Appends what the plugin saw of each prompt, without its text, to `~/.cache/opencode-voice/plugin.log`. |

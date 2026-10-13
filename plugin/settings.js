@@ -26,7 +26,11 @@ const NUMBERS = {
   threads: { title: "Processor threads", help: "How many threads the model may use. 1 to 64.", description: "More threads make the live text faster, up to the number of physical cores" },
 }
 
-export const isBusy = (status) => status?.state === "downloading" || status?.state === "loading"
+const TEXTS = {
+  key: { title: "Shortcut", help: 'The keys that start and end a recording, joined by "+". For example alt+r, ctrl+shift+r or f8.', description: "Starts a recording, and ends and sends it" },
+}
+
+export const isBusy =(status) => status?.state === "downloading" || status?.state === "loading"
 
 export function statusLine(status) {
   if (!status) return "The daemon is not running"
@@ -63,12 +67,13 @@ async function pick(key, config, dialog) {
     dialog.set?.({ size: "large" })
     return selection
   }
-  const text = await dialog.prompt({ title: NUMBERS[key].title, description: NUMBERS[key].help, value: String(config[key]) })
+  const item = TEXTS[key] ?? NUMBERS[key]
+  const text = await dialog.prompt({ title: item.title, description: item.help, value: String(config[key]) })
   if (text === undefined || text.trim() === "") return undefined
-  return Number(text)
+  return TEXTS[key] ? text.trim().toLowerCase() : Number(text)
 }
 
-export async function openSettings({ dialog, toast, call, ready, watch }) {
+export async function openSettings({ dialog, toast, call, ready, watch, onChange = () => {} }) {
   const say = (variant, message) => toast.show({ variant, title: "Voice", message })
   let pending
   let showProgress = false
@@ -100,6 +105,7 @@ export async function openSettings({ dialog, toast, call, ready, watch }) {
     const loaded = config.status.state === "ready"
     const options = [
       { value: "status", title: statusLine(config.status), category: "Status", description: busy ? "Select to watch the progress" : loaded ? "Loaded and waiting for a recording" : "Select to load the model now" },
+      ...Object.entries(TEXTS).map(([key, item]) => ({ value: key, title: `${item.title}: ${config[key]}`, category: "Recording", description: item.description })),
       ...Object.entries(SELECTS).filter(([, item]) => item.category === "Recognition").map(([key, item]) => ({ value: key, title: `${item.title}: ${label(key, config[key])}`, category: item.category, description: item.description })),
       ...Object.entries(NUMBERS).map(([key, item]) => ({ value: key, title: `${item.title}: ${config[key]}`, category: "Recognition", description: item.description })),
       {
@@ -131,7 +137,8 @@ export async function openSettings({ dialog, toast, call, ready, watch }) {
       say("error", result.error)
       continue
     }
-    const done = key === "speak" ? (value ? "Spoken replies are on." : "Spoken replies are off.") : `${(SELECTS[key] ?? NUMBERS[key]).title} set to ${label(key, result[key])}.`
+    onChange(result)
+    const done = key === "speak" ? (value ? "Spoken replies are on." : "Spoken replies are off.") : `${(SELECTS[key] ?? NUMBERS[key] ?? TEXTS[key]).title} set to ${label(key, result[key])}.`
     if (isBusy(result.status)) {
       pending = done
       showProgress = true
