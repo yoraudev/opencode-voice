@@ -1,0 +1,30 @@
+{
+  "name": "opencode-voice",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local voice prompts and spoken replies for OpenCode 2",
+  "license": "SEE LICENSE IN LICENSE",
+  "type": "module",
+  "files": [
+    "daemon",
+    "plugin",
+    "scripts",
+    "docs",
+    "README.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "daemon": "node daemon/server.mjs",
+    "mic": "node scripts/mic.mjs",
+    "test": "node --test \"test/*.test.mjs\""
+  },
+  "dependencies": {
+    "@picovoice/pvrecorder-node": "^1.2.9",
+    "@picovoice/pvspeaker-node": "^1.0.3",
+    "sherpa-onnx-node": "^1.13.8"
+  },
+  "devDependencies": {
+    "@opencode/plugin": "^2.0.28"
+  }
+}
