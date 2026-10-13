@@ -27,6 +27,7 @@ Examples of issues that should be reported:
 - the daemon listening on anything other than `127.0.0.1`
 - the microphone staying open after a recording has ended, was cancelled or failed
 - audio or recognized text being written to disk or sent anywhere other than to the OpenCode window that started the recording
+- a model file or a voice archive being accepted although its checksum does not match the one in `daemon/models.mjs` or `daemon/voices.mjs`
 - a downloaded model or voice archive writing files outside `~/.cache/opencode-voice`
 - the `speak` tool being offered to the model in a turn the user did not start by voice
 
@@ -38,5 +39,5 @@ The following are known properties of the tool, described in the [README](README
 - a prompt being sent without review once the speaker has been silent for the configured time
 - a model acting on a misheard prompt, or not calling the `speak` tool
 - spoken replies being audible to people near the speakers
-- models and voices being downloaded without a checksum
+- a file that is already in `~/.cache/opencode-voice` being changed by other software running under the same user account; checksums are checked when a file is downloaded, not each time it is loaded
 - other software running under the same user account calling the local daemon, including to start a recording, speak a text or change the settings

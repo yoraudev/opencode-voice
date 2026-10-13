@@ -21,7 +21,6 @@ Speech is recognized with Whisper and spoken with Piper voices, both on your own
 > - **Text that leaves your machine.** The audio stays on your computer, but the recognized text is a normal prompt and goes to your model's provider like anything you type.
 > - **Replies that others hear.** Spoken replies are played on your speakers. The model chooses what to say and may mention what it worked on.
 > - **A model that skips the spoken reply.** Whether the model calls the tool that speaks is up to the model. Weaker models sometimes do not, and then the turn is silent.
-> - **Unverified downloads.** Models and voices are downloaded from Hugging Face and from the sherpa-onnx releases on GitHub on first use and are not checked against a checksum.
 > - **Anything local can call the daemon.** It listens only on your own machine and refuses requests from web pages, but any program running under your user account can start a recording, speak a text or change the settings.
 >
 > How to lower the risk:
@@ -122,6 +121,7 @@ The plugin itself takes options in `opencode.jsonc`:
 - The models run on the processor. On a 6-core desktop processor `small` updates the live text about once a second; `medium` and larger fall behind the speaker and suit short prompts better.
 - The live text is shown above the prompt, not in it, and cannot be edited before it is sent.
 - A recording that hears no speech for 30 seconds ends without sending anything, and any recording ends after 5 minutes.
+- Models and voices are downloaded from Hugging Face and from the sherpa-onnx releases on GitHub. Each download is checked against a SHA-256 checksum that is part of this project, and a file that does not match is discarded.
 - The plugin starts a small daemon that owns the microphone and the models. It exits after 10 minutes without use, and its log is `~/.cache/opencode-voice/daemon.log`.
 - macOS asks for microphone access for the terminal on the first recording. Linux needs ALSA (`libasound2`) and `tar` with bzip2.
 - Developed and tested on Windows 11. The audio and recognition libraries ship binaries for Linux and macOS and the project has no platform-specific code, but it has not been run there yet.

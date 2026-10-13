@@ -64,11 +64,15 @@ While a voice is downloaded or loaded, `status` describes the voice instead of t
 
 ### Models
 
-`daemon/models.mjs` lists the Whisper models with the exact size of each file. A model consists of an encoder, a decoder and a token list from `huggingface.co/csukuangfj/sherpa-onnx-whisper-<model>`, plus the Silero VAD model from the sherpa-onnx releases, all stored in `~/.cache/opencode-voice/models`. A file counts as present when it has the listed size. A download is written to a `.part` file and renamed once its size matches.
+`daemon/models.mjs` lists the Whisper models with the exact size and the SHA-256 checksum of each file. A model consists of an encoder, a decoder and a token list from `huggingface.co/csukuangfj/sherpa-onnx-whisper-<model>`, plus the Silero VAD model from the sherpa-onnx releases, all stored in `~/.cache/opencode-voice/models`.
 
-`daemon/voices.mjs` lists the Piper voices. A voice is a `.tar.bz2` archive from the sherpa-onnx releases and is unpacked into `~/.cache/opencode-voice/voices` with the system's `tar`, which Windows 10, macOS and Linux include. `tar` is given the archive's name relative to its working directory, because GNU tar reads a path like `C:\…` as a host name. A `.complete` file is written after a voice was unpacked, so an interrupted download is not mistaken for a voice.
+`download` in the same file is the only way a file enters the cache. It writes to a `.part` file while it hashes the bytes, stops as soon as more bytes arrive than the file should have, and renames the file only when both its size and its checksum match. Anything else is deleted and reported as an error, which the settings menu and the recording show.
 
-Neither models nor voices are checked against a checksum.
+`daemon/voices.mjs` lists the Piper voices with the size and checksum of each archive. A voice is a `.tar.bz2` archive from the sherpa-onnx releases. It is downloaded with the same `download`, so an archive that does not match its checksum is never unpacked. A matching archive is unpacked into `~/.cache/opencode-voice/voices` with the system's `tar`, which Windows 10, macOS and Linux include. `tar` is given the archive's name relative to its working directory, because GNU tar reads a path like `C:\…` as a host name. A `.complete` file is written after a voice was unpacked, so an interrupted download is not mistaken for a voice.
+
+The checksums were taken from Hugging Face's file metadata and from the digests GitHub publishes for release assets. They pin the files as they were when the checksums were recorded: if a file is replaced upstream, its download fails until the checksum here is updated.
+
+A model file that is already in the cache counts as present when it has the listed size, and a voice when its `.complete` file exists. Checksums are checked on download, not each time a file is loaded.
 
 ### Recording
 
@@ -146,6 +150,8 @@ Every push to `main` runs `.github/workflows/release.yml`. It runs the tests, ta
 ## Tests
 
 `npm test` runs the files in `test/` with `node:test`. `test/fakes.mjs` replaces the microphone with a list of frames and the speech detector with one that treats every non-silent frame as speech, so a recording is written as a string such as `..SSSS...SS`. The daemon tests start `createDaemon` on a free port with every device and model replaced, and the client and settings tests run the plugin's `client.js`, `settings.js` and `server.js` against it.
+
+`test/download.test.mjs` serves bytes in place of the network and checks that only a file with the right size and checksum is kept, and that a voice archive that does not match is never unpacked.
 
 `npm run mic` runs the real recognition without OpenCode, from the microphone or, with `--wav`, from a 16 kHz mono WAV file played at real-time speed. `--model`, `--language` and `--silence` override the saved settings for that run.
 
