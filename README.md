@@ -1,5 +1,7 @@
 # OpenCode Voice
 
+> **Note:** This is an unofficial, community-made plugin. It is not affiliated with, endorsed by, or maintained by the official OpenCode project.
+
 Speak your prompts in OpenCode 2 and hear the answer. A record button and a shortcut start the microphone, the text appears above the prompt while you speak, and when you stop speaking it is sent to the model. After a spoken prompt the model also says a short reply aloud, in Turkish or English.
 
 Speech is recognized with Whisper and spoken with Piper voices, both on your own computer. Works on Windows, Linux and macOS.
